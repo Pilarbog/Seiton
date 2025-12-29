@@ -177,6 +177,108 @@ class Main(QMainWindow):
         except Exception:
             pass
 
+        # ---------- Idiomas (español/inglés) ----------
+        # Mapa de traducciones (es -> en) para etiquetas y botones.
+        # Rextos a utilizar para la traducciom.
+        self.translations_map = {
+            'Configuración': 'Configuration',
+            'Tema': 'Theme',
+            'Idioma': 'Language',
+            'Agregar': 'Add',
+            'Editar': 'Edit',
+            'Guardar': 'Save',
+            'Buscar': 'Search',
+            'Eliminar': 'Delete',
+            'Localidad': 'Location',
+            'Codigo Postal': 'Postal Code',
+            'Código Postal': 'Postal Code',
+            'Vehiculo': 'Vehicle',
+            'Vehículo': 'Vehicle',
+            'Cliente': 'Client',
+            'Configuracion': 'Configuration',
+            'Chofer': 'Driver',
+            'Conductor': 'Driver',
+            'Producto': 'Product',
+            # plurals / tab names
+            'Choferes': 'Drivers',
+            'Productos': 'Products',
+            'Localidad': 'Location',
+            'Localidades': 'Locations',
+            'Registro  de Localidades': 'Location registration',
+            'Registro Vehiculos': 'Vehicle registration',
+            'Vehiculos': 'Vehicles',
+            'Clientes': 'Clients',
+            # Client form labels
+            'Registro clientes': 'Client registration',
+            'Nombre/Razón social': 'Name/Company',
+            'Cuil/Cuit': 'Tax ID',
+            'Dni': 'ID',
+            'DNI': 'ID',
+            'Dirección': 'Address',
+            'Telefono': 'Phone',
+            'Ciudad': 'City',
+            # Chofer form labels
+            'Registro choferes': 'Driver registration',
+            'Registro choferes': 'Driver registration',
+            'Agregar Chofer': 'Add Driver',
+            # Producto form labels
+            'Registro Productos': 'Product registration',
+            'Lista de productos': 'Product list',
+            'Tabla productos': 'Products table',
+            'Codigo del producto': 'Product code',
+            'Codigo producto': 'Product code',
+            # Campos comunes y variantes (Productos / Vehículos / Formularios)
+            'Nombre completo': 'Full name',
+            'Direccion': 'Address',
+            'Fecha de Nacimiento': 'Date of Birth',
+            'Fecha de Nacimmiento': 'Date of Birth',
+            'Descripcion': 'Description',
+            'Descripción': 'Description',
+            'Precio': 'Price',
+            'Precio Unitario': 'Unit Price',
+            'Stock': 'Stock',
+            'Cantidad': 'Quantity',
+            'Categoria': 'Category',
+            'Categoría': 'Category',
+            'Codigo': 'Code',
+            'Código': 'Code',
+            # Vehículo
+            'Registro Vehículos': 'Vehicle registration',
+            'Marca': 'Brand',
+            'Modelo': 'Model',
+            'Matricula': 'License plate',
+            'Disponibilidad': 'Availability',
+            #Pllanillas
+            'Agregar Cliente': 'Add Client',
+            'Agregar Vehículo': 'Add Vehicle',
+            'Agregar Producto': 'Add Product',
+            'Agregar Localidad': 'Add Location',
+            'Agregar Chofer': 'Add Driver',
+            'Agregar a Planilla': 'Add to Form',
+            'Continuar': 'Continue',
+            'Inspeccionar': 'Inspect',
+            'Agregar': 'Add',
+            'Registro Planillas': 'Form Registration',
+    
+        }
+        # reverse map (en -> es)
+        self.reverse_translations = {v: k for k, v in self.translations_map.items()}
+
+        # Estado de idioma actual (predeterminado español)
+        self.current_lang = 'es'
+
+        # Conectar el botón de idioma para alternar idioma si existe
+        try:
+            if hasattr(self, 'btnIdioma') and self.btnIdioma is not None:
+                # Mostrar código de idioma actual
+                try:
+                    self.btnIdioma.setText('ES')
+                except Exception:
+                    pass
+                self.btnIdioma.clicked.connect(self.toggle_language)
+        except Exception:
+            pass
+
         # Conectar el botón de configuración sólo si existe en la UI
         if hasattr(self, 'btnConfiguracion') and self.btnConfiguracion is not None:
             self.btnConfiguracion.clicked.connect(self.toggleConfiguracion)
@@ -356,6 +458,110 @@ class Main(QMainWindow):
     def toggle_dock(self):
         visible = self.menu_dock.isVisible()
         self.menu_dock.setVisible(not visible)
+
+    def toggle_language(self):
+        """Alterna entre español e inglés para las etiquetas y botones.
+
+        Sólo se traducen textos que estén explícitamente definidos en
+        `self.translations_map` (clave en español -> valor en inglés).
+        """
+        try:
+            if self.current_lang == 'es':
+                self.current_lang = 'en'
+                self.apply_language('en')
+                # marcar botón con el código opuesto
+                try:
+                    if hasattr(self, 'btnIdioma') and self.btnIdioma is not None:
+                        self.btnIdioma.setText('EN')
+                except Exception:
+                    pass
+            else:
+                self.current_lang = 'es'
+                self.apply_language('es')
+                try:
+                    if hasattr(self, 'btnIdioma') and self.btnIdioma is not None:
+                        self.btnIdioma.setText('ES')
+                except Exception:
+                    pass
+        except Exception:
+            pass
+
+    def apply_language(self, lang):
+        """Aplica el idioma `lang` ('es' o 'en') a QLabel y QPushButton.
+
+        Sólo se traducen textos exactamente iguales a las claves del mapa.
+        """
+        if lang not in ('es', 'en'):
+            return
+
+        try:
+            # Traducir QLabels
+            for lbl in self.findChildren(QtWidgets.QLabel):
+                try:
+                    t = lbl.text().strip()
+                    if not t:
+                        continue
+                    if lang == 'en' and t in self.translations_map:
+                        lbl.setText(self.translations_map[t])
+                    elif lang == 'es' and t in self.reverse_translations:
+                        lbl.setText(self.reverse_translations[t])
+                except Exception:
+                    pass
+
+            # Traducir títulos de QGroupBox si los hubiera
+            for g in self.findChildren(QtWidgets.QGroupBox):
+                try:
+                    t = g.title().strip()
+                    if not t:
+                        continue
+                    if lang == 'en' and t in self.translations_map:
+                        g.setTitle(self.translations_map[t])
+                    elif lang == 'es' and t in self.reverse_translations:
+                        g.setTitle(self.reverse_translations[t])
+                except Exception:
+                    pass
+
+            # Traducir textos de pestañas en QTabWidget
+            for tw in self.findChildren(QtWidgets.QTabWidget):
+                try:
+                    for i in range(tw.count()):
+                        t = tw.tabText(i).strip()
+                        if not t:
+                            continue
+                        if lang == 'en' and t in self.translations_map:
+                            tw.setTabText(i, self.translations_map[t])
+                        elif lang == 'es' and t in self.reverse_translations:
+                            tw.setTabText(i, self.reverse_translations[t])
+                except Exception:
+                    pass
+
+            # Traducir QPushButtons
+            for btn in self.findChildren(QtWidgets.QPushButton):
+                try:
+                    t = btn.text().strip()
+                    if not t:
+                        continue
+                    if lang == 'en' and t in self.translations_map:
+                        btn.setText(self.translations_map[t])
+                    elif lang == 'es' and t in self.reverse_translations:
+                        btn.setText(self.reverse_translations[t])
+                except Exception:
+                    pass
+
+            # Traducir QCheckBox (por ejemplo: Disponibilidad)
+            for cb in self.findChildren(QtWidgets.QCheckBox):
+                try:
+                    t = cb.text().strip()
+                    if not t:
+                        continue
+                    if lang == 'en' and t in self.translations_map:
+                        cb.setText(self.translations_map[t])
+                    elif lang == 'es' and t in self.reverse_translations:
+                        cb.setText(self.reverse_translations[t])
+                except Exception:
+                    pass
+        except Exception:
+            pass
 
     def toggleConfiguracion(self):
         # Animación de deslizado para `frameConfiguracion` (entrada/salida horizontal)

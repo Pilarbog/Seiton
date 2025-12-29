@@ -53,7 +53,7 @@ class Cliente():
             conexion_BD = sqlite3.connect("pedidos.sqlite3")
             cursor = conexion_BD.cursor()
             buscar = main_window.lineEdit_buscar_cliente.text()
-            cursor.execute("SELECT * FROM cliente WHERE cliente LIKE ?", ('%' + buscar + '%',))
+            cursor.execute("SELECT * FROM cliente WHERE nombre LIKE ?", ('%' + buscar + '%',))
             clientes = cursor.fetchall()
             main_window.tabla_cliente.setRowCount(0)
             for cliente1 in clientes:
